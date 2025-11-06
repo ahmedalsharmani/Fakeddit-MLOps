@@ -1,4 +1,4 @@
-name: 🧠 MLOps Pipeline - Train & Track (Final Version)
+name: 🧠 Final MLOps Pipeline - Train & Track (No DVC)
 
 on:
   push:
@@ -59,26 +59,15 @@ jobs:
         run: echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
 
       # ---------------------------
-      # ⚡ STEP 6: Quick Pipeline Verification
-      # ---------------------------
-      - name: ⚡ Quick pipeline verification
-        run: |
-          echo "🔍 Importing training module..."
-          python -c "import sys; sys.path.append('src'); import train"
-          echo "✅ All modules import correctly!"
-          echo "🚀 CI/CD base pipeline verified successfully."
-
-      # ---------------------------
-      # 🚀 STEP 7: Run Model Training
+      # 🚀 STEP 6: Run Model Training
       # ---------------------------
       - name: 🚀 Run full model training
         run: |
           echo "🎯 Starting model training..."
           python src/train.py
-        continue-on-error: false  # Fail if training crashes
 
       # ---------------------------
-      # 💾 STEP 8: Upload Artifacts (Model + MLflow Logs)
+      # 💾 STEP 7: Upload Artifacts (Model + MLflow Logs)
       # ---------------------------
       - name: 💾 Upload trained model and logs
         if: success()
@@ -92,7 +81,7 @@ jobs:
           retention-days: 5
 
       # ---------------------------
-      # 🧹 STEP 9: Cleanup
+      # 🧹 STEP 8: Cleanup
       # ---------------------------
       - name: 🧹 Post cleanup
         run: echo "✅ Full CI/CD MLOps run completed successfully!"
