@@ -29,6 +29,10 @@ jobs:
       run: |
         dvc status || echo "DVC already initialized"
 
+    # 🧩 New step: Add src to PYTHONPATH for GitHub runner
+    - name: Add src to PYTHONPATH
+      run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
+
     - name: Run model training
       run: |
         python src/train.py
