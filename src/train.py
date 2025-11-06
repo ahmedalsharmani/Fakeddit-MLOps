@@ -1,6 +1,7 @@
 ﻿import tensorflow as tf, pandas as pd
-from dataset_tfdata import make_ds
-from model_textcnn_resnet import build_model
+from src.dataset_tfdata import make_ds
+from src.model_textcnn_resnet import build_model
+
 
 train_csv = "data/train.csv"
 val_csv   = "data/val.csv"
