@@ -31,7 +31,7 @@ jobs:
 
     - name: Run model training
       run: |
-        python train.py
+        python src/train.py
 
     - name: Save MLflow artifacts
       if: success()
