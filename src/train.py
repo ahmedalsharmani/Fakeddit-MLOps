@@ -1,6 +1,15 @@
-﻿import tensorflow as tf, pandas as pd
-from src.dataset_tfdata import make_ds
-from src.model_textcnn_resnet import build_model
+﻿import tensorflow as tf
+import pandas as pd
+import os
+import sys
+
+# --- Ensure current folder (src) is in Python path ---
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# ✅ FIX IMPORTS — remove "src." prefix
+from dataset_tfdata import make_ds
+from model_textcnn_resnet import build_model
+
 
 
 train_csv = "data/train.csv"
