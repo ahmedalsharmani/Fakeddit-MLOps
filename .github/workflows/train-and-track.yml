@@ -1,6 +1,4 @@
-# Force refresh at 2025-11-06
-
-
+# Force refresh at 2025-11-06 - removed DVC pull completely
 name: MLOps Pipeline
 
 on:
@@ -15,57 +13,34 @@ jobs:
   train-and-track:
     runs-on: ubuntu-latest
     steps:
-      # ---------------------------
-      # 🧩 STEP 1: Checkout Repository
-      # ---------------------------
       - name: 🔄 Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: true  # Enable Git LFS support
+          lfs: true
 
-      # ---------------------------
-      # 🐍 STEP 2: Set Up Python
-      # ---------------------------
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # ---------------------------
-      # 📦 STEP 3: Install Dependencies
-      # ---------------------------
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install mlflow dvc
 
-      # ---------------------------
-      # 🧮 STEP 4: Verify Dataset Availability
-      # ---------------------------
       - name: ✅ Verify dataset (Git LFS)
         run: |
           echo "Checking dataset files..."
           ls -lh data/multimodal_only_samples/
           echo "✅ Dataset found locally via Git LFS."
 
-      # ---------------------------
-      # 🧠 STEP 5: Add src to PYTHONPATH
-      # ---------------------------
       - name: 🧠 Add src to PYTHONPATH
-        run: |
-          echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
 
-      # ---------------------------
-      # 🚀 STEP 6: Run Model Training
-      # ---------------------------
       - name: 🚀 Run model training
-        run: |
-          python src/train.py
+        run: python src/train.py
 
-      # ---------------------------
-      # 💾 STEP 7: Save MLflow Artifacts
-      # ---------------------------
       - name: 💾 Save MLflow artifacts
         if: success()
         uses: actions/upload-artifact@v4
@@ -73,9 +48,5 @@ jobs:
           name: mlflow-artifacts
           path: mlruns/
 
-      # ---------------------------
-      # 🧹 STEP 8: Cleanup
-      # ---------------------------
       - name: 🧹 Post cleanup
-        run: |
-          echo "✅ Training and tracking complete."
+        run: echo "✅ Training and tracking complete."
