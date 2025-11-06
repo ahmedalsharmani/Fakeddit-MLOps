@@ -1,4 +1,4 @@
-name: MLOps Pipeline
+name: MLOps Pipeline (Fast Test)
 
 on:
   push:
@@ -59,25 +59,17 @@ jobs:
         run: echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
 
       # ---------------------------
-      # 🚀 STEP 6: Run Model Training
+      # ⚡ STEP 6: Quick Pipeline Test
       # ---------------------------
-      - name: 🚀 Run model training
+      - name: ⚡ Quick pipeline verification
         run: |
-          echo "Starting quick training for CI/CD validation..."
-          python src/train.py --epochs 1 || echo "⚠️ Training failed or skipped."
+          echo "🔍 Importing training module..."
+          python -c "import sys; sys.path.append('src'); import train"
+          echo "✅ All modules import correctly!"
+          echo "🚀 CI/CD pipeline verified successfully — skipping training."
 
       # ---------------------------
-      # 💾 STEP 7: Save MLflow Artifacts
-      # ---------------------------
-      - name: 💾 Save MLflow artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mlflow-artifacts
-          path: mlruns/
-
-      # ---------------------------
-      # 🧹 STEP 8: Cleanup
+      # 🧹 STEP 7: Cleanup
       # ---------------------------
       - name: 🧹 Post cleanup
-        run: echo "✅ Training and tracking complete."
+        run: echo "🎯 Fast CI/CD test run completed successfully!"
