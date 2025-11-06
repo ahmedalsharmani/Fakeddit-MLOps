@@ -1,34 +1,64 @@
-﻿import os
-import sys
-import tensorflow as tf
+﻿import tensorflow as tf
 import pandas as pd
+from dataset_tfdata import make_ds
+from model_textcnn_resnet import build_model
 
-# --- 🧩 Ensure the script can find modules inside /src ---
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-try:
-    from dataset_tfdata import make_ds
-    from model_textcnn_resnet import build_model
-except ModuleNotFoundError as e:
-    print("⚠️ Import failed, check folder structure. Current path:", os.getcwd())
-    print("Files in src:", os.listdir(os.path.dirname(os.path.abspath(__file__))))
-    raise e
-
-# --- 🧠 Dummy minimal training workflow (for CI/CD test) ---
 def main():
-    print("✅ Starting training pipeline...")
+    train_csv = "data/train.csv"
+    val_csv = "data/val.csv"
 
-    # Create small fake dataset (CI safe, no large data)
-    x_train = tf.random.normal((32, 224, 224, 3))
-    y_train = tf.keras.utils.to_categorical(tf.random.uniform((32,), 0, 2, dtype=tf.int32), 2)
+    # Build model & get the TextVectorization layer handle
+    model, text_vec = build_model(num_classes=2)
 
-    model = build_model()
-    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+    # Adapt vectorizer on training texts
+    texts = pd.read_csv(train_csv)["text"].astype(str).tolist()
+    text_ds = tf.data.Dataset.from_tensor_slices(texts).batch(256)
+    text_vec.adapt(text_ds)
 
-    model.fit(x_train, y_train, epochs=1, batch_size=8)
-    model.save("fusion_model_ci.keras")
+    # Datasets
+    train_ds = make_ds(train_csv, batch=32, shuffle=True)
+    val_ds = make_ds(val_csv, batch=32)
 
-    print("✅ Model training complete and saved successfully!")
+    # Callbacks
+    cbs = [
+        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=2, restore_best_weights=True),
+        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=1, factor=0.5, verbose=1),
+    ]
+
+    print("🚀 Starting training pipeline...")
+
+    # Stage 1 — Train the top layers
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(1e-3),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+    model.fit(train_ds, validation_data=val_ds, epochs=3, callbacks=cbs)
+
+    # Stage 2 — Fine-tune the image backbone
+    for layer in model.layers:
+        if isinstance(layer, tf.keras.layers.BatchNormalization):
+            layer.trainable = False
+
+    unfrozen = 0
+    for layer in reversed(model.layers):
+        name = layer.name.lower()
+        if any(k in name for k in ["conv", "block"]) and "conv1d" not in name:
+            layer.trainable = True
+            unfrozen += 1
+            if unfrozen >= 40:
+                break
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(1e-4),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+    model.fit(train_ds, validation_data=val_ds, epochs=2, callbacks=cbs)
+
+    # Save weights
+    model.save_weights("fusion_model.weights.h5")
+    print("✅ Model trained and saved as fusion_model.weights.h5")
 
 if __name__ == "__main__":
     main()
