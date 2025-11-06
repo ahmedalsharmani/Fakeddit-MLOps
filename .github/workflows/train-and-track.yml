@@ -1,4 +1,4 @@
-name: MLOps Pipeline (Fast Test)
+name: 🧠 MLOps Pipeline - Train & Track (Final Version)
 
 on:
   push:
@@ -59,17 +59,40 @@ jobs:
         run: echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
 
       # ---------------------------
-      # ⚡ STEP 6: Quick Pipeline Test
+      # ⚡ STEP 6: Quick Pipeline Verification
       # ---------------------------
       - name: ⚡ Quick pipeline verification
         run: |
           echo "🔍 Importing training module..."
           python -c "import sys; sys.path.append('src'); import train"
           echo "✅ All modules import correctly!"
-          echo "🚀 CI/CD pipeline verified successfully — skipping training."
+          echo "🚀 CI/CD base pipeline verified successfully."
 
       # ---------------------------
-      # 🧹 STEP 7: Cleanup
+      # 🚀 STEP 7: Run Model Training
+      # ---------------------------
+      - name: 🚀 Run full model training
+        run: |
+          echo "🎯 Starting model training..."
+          python src/train.py
+        continue-on-error: false  # Fail if training crashes
+
+      # ---------------------------
+      # 💾 STEP 8: Upload Artifacts (Model + MLflow Logs)
+      # ---------------------------
+      - name: 💾 Upload trained model and logs
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model-and-mlflow
+          path: |
+            fusion_model*.h5
+            fusion_model*.keras
+            mlruns/
+          retention-days: 5
+
+      # ---------------------------
+      # 🧹 STEP 9: Cleanup
       # ---------------------------
       - name: 🧹 Post cleanup
-        run: echo "🎯 Fast CI/CD test run completed successfully!"
+        run: echo "✅ Full CI/CD MLOps run completed successfully!"
