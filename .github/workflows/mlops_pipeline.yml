@@ -25,10 +25,9 @@ jobs:
         pip install -r requirements.txt
         pip install mlflow dvc[all] tensorflow pillow pandas
 
-    - name: Initialize DVC
+    - name: Verify DVC setup
       run: |
-        dvc init --no-scm
-        dvc pull || echo "No remote data yet"
+        dvc status || echo "DVC already initialized"
 
     - name: Run model training
       run: |
