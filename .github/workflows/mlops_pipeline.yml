@@ -29,6 +29,11 @@ jobs:
       run: |
         dvc status || echo "DVC already initialized"
 
+    - name: Pull dataset from DVC remote
+      run: |
+        dvc pull data/train.csv.dvc data/val.csv.dvc data/test.csv.dvc
+
+
     # 🧩 New step: Add src to PYTHONPATH for GitHub runner
     - name: Add src to PYTHONPATH
       run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
